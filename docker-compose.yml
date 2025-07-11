@@ -1,0 +1,38 @@
+version: "3.8"
+
+networks:
+  net-all:
+    external: true
+
+services:
+  dinhero-db:
+    image: postgres
+    container_name: wh_stone_hotline-db
+    dns:
+      - 10.85.254.254
+    ports:
+      - "5732:5432"
+    networks:
+      net-all:
+        ipv4_address: 10.85.57.2
+    environment:
+      POSTGRES_DB: wh_db
+      POSTGRES_USER: wh_user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - /home/orangepi/data/docker-data/data/docker/postgres/wh_stone_hotline/v1:/var/lib/postgresql/data
+    restart: always
+
+  api:
+    build: .
+    container_name: wh_stone_hotline-api
+    restart: always
+    ports:
+      - "5733:8000" 
+    env_file:
+      - .env
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      net-all:
+        ipv4_address: 10.85.57.3
