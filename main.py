@@ -14,19 +14,20 @@ db_pool = None
 def parse_datetime(date_string: str) -> datetime:
     if not date_string:
         return None
-    # Stone uses a few different timezone formats, so we try a few common ones.
-    for fmt in (
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-        "%Y-%m-%dT%H:%M:%SZ",
-        "%Y-%m-%dT%H:%M:%S.%f%z",
-    ):
-        try:
-            # The [:-1] removes the 'Z' for the formats that include it
-            if 'Z' in date_string and '.' in date_string:
-                return datetime.strptime(date_string[:-1] + '000Z', "%Y-%m-%dT%H:%M:%S.%f%z")
-            return datetime.strptime(date_string, fmt)
-        except (ValueError, TypeError):
-            continue
+    try:
+        # Truncate to 6 microsecond digits before parsing
+        if '.' in date_string:
+            parts = date_string.split('.')
+            parts[1] = parts[1][:6] + 'Z'
+            date_string = '.'.join(parts)
+        return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except (ValueError, TypeError):
+        # Fallback for other formats if needed
+        for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z"):
+            try:
+                return datetime.strptime(date_string, fmt)
+            except (ValueError, TypeError):
+                continue
     raise ValueError(f"Unable to parse date: {date_string}")
 
 async def get_db_pool():
