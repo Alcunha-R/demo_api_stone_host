@@ -4,10 +4,30 @@ from pydantic import BaseModel
 from typing import Dict, Any
 import json
 import config
+from datetime import datetime
 
 app = FastAPI()
 
 db_pool = None
+
+# Helper function to parse date strings
+def parse_datetime(date_string: str) -> datetime:
+    if not date_string:
+        return None
+    # Stone uses a few different timezone formats, so we try a few common ones.
+    for fmt in (
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+    ):
+        try:
+            # The [:-1] removes the 'Z' for the formats that include it
+            if 'Z' in date_string and '.' in date_string:
+                return datetime.strptime(date_string[:-1] + '000Z', "%Y-%m-%dT%H:%M:%S.%f%z")
+            return datetime.strptime(date_string, fmt)
+        except (ValueError, TypeError):
+            continue
+    raise ValueError(f"Unable to parse date: {date_string}")
 
 async def get_db_pool():
     global db_pool
@@ -52,7 +72,7 @@ async def stone_webhook(webhook_data: StoneWebhook):
                     webhook_data.id,
                     webhook_data.type,
                     json.dumps(webhook_data.dict()),
-                    webhook_data.created_at,
+                    parse_datetime(webhook_data.created_at),
                 )
 
                 order_data = webhook_data.data.get("order")
@@ -75,8 +95,8 @@ async def stone_webhook(webhook_data: StoneWebhook):
                         order_data.get("status"),
                         order_data.get("closed"),
                         order_data.get("customer_id"),
-                        order_data.get("created_at"),
-                        order_data.get("updated_at"),
+                        parse_datetime(order_data.get("created_at")),
+                        parse_datetime(order_data.get("updated_at")),
                     )
 
                 if webhook_data.type.startswith("charge."):
@@ -99,9 +119,9 @@ async def stone_webhook(webhook_data: StoneWebhook):
                         charge_data.get("status"),
                         charge_data.get("currency"),
                         charge_data.get("payment_method"),
-                        charge_data.get("paid_at"),
-                        charge_data.get("created_at"),
-                        charge_data.get("updated_at"),
+                        parse_datetime(charge_data.get("paid_at")),
+                        parse_datetime(charge_data.get("created_at")),
+                        parse_datetime(charge_data.get("updated_at")),
                     )
 
             except Exception as e:
