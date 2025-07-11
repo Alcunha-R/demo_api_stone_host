@@ -14,12 +14,26 @@ db_pool = None
 def parse_datetime(date_string: str) -> datetime:
     if not date_string:
         return None
+
+    # Sanitize the date string
+    if date_string.endswith('ZZ'):
+        date_string = date_string[:-1]
+
     try:
         # Truncate to 6 microsecond digits before parsing
         if '.' in date_string:
             parts = date_string.split('.')
-            parts[1] = parts[1][:6] + 'Z'
-            date_string = '.'.join(parts)
+            # Ensure the fractional part is not empty
+            if len(parts) > 1 and parts[1]:
+                # Remove the 'Z' before truncating
+                if parts[1].endswith('Z'):
+                    fractional = parts[1][:-1]
+                else:
+                    fractional = parts[1]
+                
+                fractional = fractional[:6]
+                date_string = parts[0] + '.' + fractional + 'Z'
+
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ")
     except (ValueError, TypeError):
         # Fallback for other formats if needed
