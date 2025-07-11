@@ -2,3 +2,4 @@ fastapi
 uvicorn
 asyncpg
 requests
+python-dotenv

@@ -1,11 +1,15 @@
-WPP_TOKEN = "$2b$10$bRq0YBeVBM5uGqpWd4J6Ruy50xclMkVWbei2tb58Zhnmd9wZ66dg6"
-WPP_FONE = "120363419692526160"
-WPP_IS_GROUP = True
-WPP_ROUTE = "session_andti_c1"
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL="postgresql://wh_user:password@10.88.11.248:4332/wh_db"
-DB_ENDERECO="10.88.11.248"
-DB_PORTA=5732
-DB_USUARIO="wh_user"
-DB_SENHA="password"
-DB_NOME="wh_db"
+load_dotenv()
+
+WPP_TOKEN = os.getenv("WPP_TOKEN")
+WPP_FONE = os.getenv("WPP_FONE")
+WPP_IS_GROUP = os.getenv("WPP_IS_GROUP")
+WPP_ROUTE = os.getenv("WPP_ROUTE")
+
+DB_ENDERECO = os.getenv("DB_ENDERECO")
+DB_PORTA = os.getenv("DB_PORTA")
+DB_USUARIO = os.getenv("DB_USUARIO")
+DB_SENHA = os.getenv("DB_SENHA")
+DB_NOME = os.getenv("DB_NOME")

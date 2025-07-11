@@ -121,7 +121,7 @@ async def get_pedido(pedido_id: str):
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
 
         charges_rows = await connection.fetch(
-            "SELECT * FROM cobrancas_stone WHERE pedido_id = $1", pedido_id
+            "SELECT * FROM cobrancas_stone WHERE pedido_id = $1", order_row['id']
         )
 
     return {
